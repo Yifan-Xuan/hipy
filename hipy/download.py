@@ -274,5 +274,3 @@ def get_data(star_name,type):
 
     return out
 
-
-
