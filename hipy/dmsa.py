@@ -157,4 +157,5 @@ def get_dmsa(star_name):
     else:
         print(f'HIP {HIP} is in a single star solution.')
         
-    return out   
+    return out 
+
