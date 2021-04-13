@@ -1,6 +1,7 @@
-from setuptools import setup
+import setuptools
 
-setup(name='hipy',
+setuptools.setup(
+      name='hipy',
       version='1.0',
       description='A python interface to Hipparcos data',
       url='https://github.com/Yifan-Xuan/hipy',
