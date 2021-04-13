@@ -273,4 +273,3 @@ def get_data(star_name,type):
         print('No such type of data exits. Please check your input type.')
 
     return out
-
