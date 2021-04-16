@@ -9,18 +9,20 @@ import re
 import bs4
 import math
 
+
+# Construct functions to convert years(float) to Julian Date(float).
 def cal2jd(yr,mn,dy):
     y = yr - 1
     m = mn + 12
-#    date1 = 4.5+31*(10+12*1582);   # Last day of Julian calendar (1582.10.04 Noon)
-#    date2 = 15.5+31*(10+12*1582);  # First day of Gregorian calendar (1582.10.15 Noon)
-#    date = dy+31*(mn+12*yr)
+#   date1 = 4.5+31*(10+12*1582);   # Last day of Julian calendar (1582.10.04 Noon)
+#   date2 = 15.5+31*(10+12*1582);  # First day of Gregorian calendar (1582.10.15 Noon)
+#   date = dy+31*(mn+12*yr)
     b = y//400 - y//100
 #   b = math.floor(y/400) - math.floor(y/100)
     jd = math.floor(365.25*y) + math.floor(30.6001*(m+1)) + b + 1720996.5 + dy
     return jd
 
-# Construct a function to convert years(float) to Julian Date(float).
+
 def yr2jd(yr):  
     iyr = math.floor(yr)
     jd0 = cal2jd(iyr,1,1)
@@ -29,7 +31,37 @@ def yr2jd(yr):
     jd1 = cal2jd(iyr,1,0) + doy
     return jd1
 
+def cearth(year):
+    omega = 0.0172021240/86400
+    e = 0.016714
+    g0 = -0.04128
+    au = 1.496e+11
+    c = [[.540817e+09, -.334118e+11, -.145868e+12],
+         [-.202315e+10, .133781e+12, -.306652e+11],
+         [-.883589e+09, .580048e+11, -.132951e+11]]
+    ret = []
+    t  = (year - 1988.0) * 365.25 * 86400.0
+    arg = omega * t + g0
+    arg = arg + e * math.sin(arg)
+    co = math.cos(arg)
+    si = math.sin(arg)
+    for i in range(3):
+        ret.append((c[i][0] + c[i][1]*co + c[i][2]*si)/au)
+    return ret
+
+# Get five astroetric parameters of an HIP entry. 
+def query(HIP):
+    url = f'https://hipparcos-tools.cosmos.esa.int/cgi-bin/HIPcatalogueSearch.pl?noLinks=1&tabular=1&hipiId={HIP}'
+    webpage = str(urllib.request.urlopen(url).read())
+    soup = bs4.BeautifulSoup(webpage,'html.parser')
+    text = soup.find(name='pre').get_text().lstrip("\\n").rstrip("\\r\\n\\r\\n\\r\\n'")
+    text = text.split('\\r\\n\\r\\n')[0].split('\\n',1)[1].split('\\n',1)[0].split('|')
+    p = [float(x) for x in text[2:7]]
+    return p
+
 def get_data(star_name,type):
+    
+    # Convert the names of stars to HIP numbers, and get HIP numbers.
     if star_name.startswith('HIP'):
         HIP = int(star_name.split('HIP')[1])
     else:
@@ -37,6 +69,7 @@ def get_data(star_name,type):
         line = list(filter(lambda x: 'HIP' in str(x), result_table))
         HIP = int(line[0][0].split('HIP')[1])
 
+    # Download 3 types of Hipparcos data: catalogue data (catalogue), intermediate data (intermediate), and epoch photometry data (epd).
     if type == 'catalogue':
         try:
             print(f'### Query for catalogue_HIP {HIP}')
@@ -63,7 +96,8 @@ def get_data(star_name,type):
             value_list_t = list(zip(*value_list)) # Transpose the value_list
             final_list = [value_list_t[0]]
             final_list_t = list(zip(*final_list))
-
+            
+            # Assign units to columns.
             final_list_t[5] = [float(x) for x in list(final_list_t[5])] * u.mag
             final_list_t[8] = [float(x) for x in list(final_list_t[8])] * u.deg
             final_list_t[9] = [float(x) for x in list(final_list_t[9])] * u.deg
@@ -108,7 +142,8 @@ def get_data(star_name,type):
             final_list_t[66] = [float(x) for x in list(final_list_t[66])] * u.mag
             final_list_t[67] = [float(x) for x in list(final_list_t[67])] * u.mag
             final_list_t[75] = [float(x) for x in list(final_list_t[75])] * u.mag
-    
+            
+            # Assign names and descriptions to columns.
             out = QTable(final_list_t,
                  names=('catalogue','hip','proximity_flag','ra_hms','dec_dms','v_mag','coarse_varflag','v_mag_source',
                        'ra','dec','astrometry_flag','parallax','pmra','pmdec','ra_error','dec_error','parallax_error','pmra_error','pmdec_error',                        
@@ -139,6 +174,8 @@ def get_data(star_name,type):
                        'position_angle':'Position angle between the components, rounded (degrees,J1991.25)','angular_seperation':'Angular separation between the components, rounded (arcsec,J1991.25)','angular_seperation_error':'Standard error of the angular seperation (arcsec)','delta_hp':'Magnitude difference of components (mag)','delta_hp_error':'Standard error of the magnitude difference (mag)',
                        'survey_flag':'Flag indicating survey star','chart_flag':'Flag indicating identification chart','notes_flag':'Flag indicating a note given at the end of the volumes','hd':'HD/HDE/HDEC identifier','bd':'DM identifier (BD)','cod':'DM identifier (CoD)','cpd':'DM identifier (CPD)',
                        'v_i_mag_red':'V-I (mag) used for photometric processing','sp_type':'Spectral type','sp_type_source':'Source of spectral type'})
+            
+            # Give the solution type of this HIP entry.
             if final_list_t[59][0] == 'C':
                 print(f'HIP {HIP} is in a component solution.')
             elif final_list_t[59][0] == 'G':
@@ -152,6 +189,8 @@ def get_data(star_name,type):
             else:
                 print(f'HIP {HIP} is in a single star solution.')
             
+            print(f'For more detailed information, please refer to https://hipparcos-tools.cosmos.esa.int/cgi-bin/HIPcatalogueSearch.pl?hipId={HIP}')
+        # A small minority of HIP catalogue data cannot be found.
         except IndexError:
             print(f'The catalogue of HIP {HIP} cannot be found.')
 
@@ -182,67 +221,101 @@ def get_data(star_name,type):
                         data.append(x)
                 data_list.append(data)
             data_list_t = list(map(list, zip(*data_list)))
-
             data_list_t[2] = [float(x) for x in list(data_list_t[2])]
             data_list_t[3] = [float(x) for x in list(data_list_t[3])]
             data_list_t[7] = [float(x) for x in list(data_list_t[7])]
             data_list_t[8] = [float(x) for x in list(data_list_t[8])]
             data_list_t[9] = [float(x) for x in list(data_list_t[9])]
-            data_list_t[10] = [float(x)+1991.25 for x in list(data_list_t[10])]
+            data_list_t[10] = [float(x) for x in list(data_list_t[10])]
 
-            jd = []
-            for year in data_list_t[10]:  
-                jd.append(yr2jd(year))
+            epoch_time = [x+1991.25 for x in list(data_list_t[10])]
             data_list_t = np.array(data_list_t).transpose()
-            data_list_t = np.insert(data_list_t,11,jd,axis=1)
+            data_list_t = np.insert(data_list_t,11,epoch_time,axis=1)
 
+            # Convert Julian years into Barycentric Julian Days.
+            jd = []
+            for yr in epoch_time:  
+                jd.append(yr2jd(yr))
+            data_list_t = np.insert(data_list_t,12,jd,axis=1)
+
+            # Convert abscissa residuals into RA residuals and Dec residuals.
             ra_residual = [float(data_list_t[i][2])*float(data_list_t[i][7]) for i in range(np.size(data_list_t,0))]
             dec_residual = [float(data_list_t[i][3])*float(data_list_t[i][7]) for i in range(np.size(data_list_t,0))]
             data_list_t = np.insert(data_list_t,8,ra_residual,axis=1)
             data_list_t = np.insert(data_list_t,9,dec_residual,axis=1)
 
+            # Convert standard errors of abscissa into standard errors of RA and Dec.
             ra_error = [float(data_list_t[i][2])*float(data_list_t[i][10]) for i in range(np.size(data_list_t,0))]
             dec_error = [float(data_list_t[i][3])*float(data_list_t[i][10]) for i in range(np.size(data_list_t,0))]
             data_list_t = np.insert(data_list_t,11,ra_error,axis=1)
             data_list_t = np.insert(data_list_t,12,dec_error,axis=1)
 
+            # Get the correlation coefficients between RA and Dec.
             ra_dec_corr = [float(data_list_t[i][2])*float(data_list_t[i][3]) for i in range(np.size(data_list_t,0))]
             data_list_t = np.insert(data_list_t,14,ra_dec_corr,axis=1)
 
-            data_list_tt = list(map(list, zip(*data_list_t)))
+            # Get the observational values of ra and dec in corresponding FAST/NDAC great-circle epoch time.
+            d2r = math.pi/180
+            p = query(HIP)
 
-            data_list_tt[2] = [float(x) for x in list(data_list_tt[2])]
-            data_list_tt[3] = [float(x) for x in list(data_list_tt[3])]
+            i = 0
+            dec_list = []
+            alpha_list = []
+            for year in epoch_time:
+                ret = cearth(year)
+                pa = ret[0]*math.sin(p[0]*d2r) - ret[1]*math.cos(p[0]*d2r)
+                pd = (ret[0]*math.cos(p[0]*d2r) + ret[1]*math.sin(p[0]*d2r))*math.sin(p[1]*d2r) - ret[2]*math.cos(p[1]*d2r)
+                dec_model = p[1] + (float(data_list_t[i][15])*p[4] + pd*p[2])/3600/1000
+                dec = dec_model + dec_residual[i]/3600/1000
+                alpha = p[0] + (ra_residual[i] + float(data_list_t[i][15])*p[3]/math.cos(dec_model*d2r) + p[2]*pa)/3600/1000 
+                dec_list.append(dec)
+                alpha_list.append(alpha)
+                i = i + 1 
+            data_list_t = np.insert(data_list_t,2,alpha_list,axis=1)
+            data_list_t = np.insert(data_list_t,3,dec_list,axis=1)
+
+            data_list_tt = list(zip(*data_list_t))
+            # Assign units to columns.
+            data_list_tt[2] = [float(x) for x in list(data_list_tt[2])] * u.deg
+            data_list_tt[3] = [float(x) for x in list(data_list_tt[3])] * u.deg
             data_list_tt[4] = [float(x) for x in list(data_list_tt[4])]
             data_list_tt[5] = [float(x) for x in list(data_list_tt[5])]
             data_list_tt[6] = [float(x) for x in list(data_list_tt[6])]
-            data_list_tt[7] = [float(x) for x in list(data_list_tt[7])] * u.mas
-            data_list_tt[8] = [float(x) for x in list(data_list_tt[8])] * u.mas
+            data_list_tt[7] = [float(x) for x in list(data_list_tt[7])]
+            data_list_tt[8] = [float(x) for x in list(data_list_tt[8])]
             data_list_tt[9] = [float(x) for x in list(data_list_tt[9])] * u.mas
             data_list_tt[10] = [float(x) for x in list(data_list_tt[10])] * u.mas
             data_list_tt[11] = [float(x) for x in list(data_list_tt[11])] * u.mas
             data_list_tt[12] = [float(x) for x in list(data_list_tt[12])] * u.mas
-            data_list_tt[13] = [float(x) for x in list(data_list_tt[13])]
-            data_list_tt[14] = [float(x) for x in list(data_list_tt[14])]
-            data_list_tt[15] = [float(x) for x in list(data_list_tt[15])] * u.yr
-            data_list_tt[16] = [float(x) for x in list(data_list_tt[16])] * u.d
-            data_list_tt[17] = [float(x) for x in list(data_list_tt[17])] * u.deg
-            data_list_tt[18] = [float(x) for x in list(data_list_tt[18])] * u.deg
-
+            data_list_tt[13] = [float(x) for x in list(data_list_tt[13])] * u.mas
+            data_list_tt[14] = [float(x) for x in list(data_list_tt[14])] * u.mas
+            data_list_tt[15] = [float(x) for x in list(data_list_tt[15])]
+            data_list_tt[16] = [float(x) for x in list(data_list_tt[16])]
+            data_list_tt[17] = [float(x) for x in list(data_list_tt[17])] * u.yr
+            data_list_tt[18] = [float(x) for x in list(data_list_tt[18])] * u.yr
+            data_list_tt[19] = [float(x) for x in list(data_list_tt[19])] * u.d
+            data_list_tt[20] = [float(x) for x in list(data_list_tt[20])] * u.deg
+            data_list_tt[21] = [float(x) for x in list(data_list_tt[21])] * u.deg
+            # Assign names and descriptions to columns.
             out = QTable(data_list_tt,
-                names=('orbit_number','source_absc','apd_ra','apd_dec','apd_parallax','apd_pmra','apd_pmdec','absc_residual','ra_residual','dec_residual',
-                   'absc_error','ra_error','dec_error','absc_corr','ra_dec_corr',
-                  'ref_great-circle_epoch_time (yr)','ref_great-circle_epoch_time (bjd)','ra_great-circle_pole','dec_great-circle_pole'),
+                names=('orbit_number','source_absc','ra','dec','apd_ra','apd_dec','apd_parallax','apd_pmra','apd_pmdec','absc_residual','ra_residual',
+                       'dec_residual','absc_error','ra_error','dec_error','absc_corr','ra_dec_corr','ref_great-circle_mid-epoch (yr)',
+                        'ref_great-circle_epoch_time (yr)','ref_great-circle_epoch_time (bjd)','great-circle_pole_ra','dec_great-circle_pole_dec'),
                 meta={'orbit_number':'orbit number','source_absc':'source of abscissa (F or f if FAST data, N or n if NDAC data)',
-                  'apd_ra':'abscissa partial derivative with respect to RA','apd_dec':'abscissa partial derivative with respect to Dec',
-                  'apd_parallax':'abscissa partial derivative with respect to parallax','apd_pmra':'abscissa partial derivative with respect to proper motion in RA direction',
-                  'apd_pmdec':'abscissa partial derivative with respect to proper motion in Dec direction',
-                  'absc_residual':'abscissa residual','ra_residual':'residuals of right ascension','dec_residual':'residuals of declination',
-                  'absc_error':'standard error of the abscissa','ra_error':'standard error of right ascension','dec_error':'standard error of declination',
-                  'absc_corr':'correlation coefficient between FAST and NDAC abscissae','ra_dec_corr':'correlation coefficient between right ascension and declination',
-                  'ref_great-circle_epoch_time (yr)':'the epoch time of the FAST/NDAC reference great-circle, in years',
-                  'ref_great-circle_epoch_time (bjd)':'the epoch time of the FAST/NDAC reference great-circle, in Barycentric Julian Days',
-                  'ra_great-circle_pole':'right ascension within ICRS of the FAST/NDAC reference great-circle pole','dec_great-circle_pole':'declination within ICRS of the FAST/NDAC reference great-circle pole'})
+                      'ra':'observational value of RA in this FAST/NDAC great-circle epoch time (deg)','dec':'observational value of Dec in this FAST/NDAC great-circle epoch time (deg)',
+                      'apd_ra':'abscissa partial derivative with respect to RA','apd_dec':'abscissa partial derivative with respect to Dec',
+                      'apd_parallax':'abscissa partial derivative with respect to parallax','apd_pmra':'abscissa partial derivative with respect to proper motion in RA direction',
+                      'apd_pmdec':'abscissa partial derivative with respect to proper motion in Dec direction',
+                      'absc_residual':'abscissa residual','ra_residual':'residual of right ascension','dec_residual':'residual of declination',
+                      'absc_error':'standard error of the abscissa','ra_error':'standard error of right ascension','dec_error':'standard error of declination',
+                      'absc_corr':'correlation coefficient between FAST and NDAC abscissae','ra_dec_corr':'correlation coefficient between right ascension and declination',
+                      'ref_great-circle_mid-epoch (yr)':'FAST/NDAC reference great-circle mid-epoch, in years relative to J1991.25(TT)',
+                      'ref_great-circle_epoch_time (yr)':'the epoch time of the FAST/NDAC reference great-circle, in years',
+                      'ref_great-circle_epoch_time (bjd)':'the epoch time of the FAST/NDAC reference great-circle, in Barycentric Julian Days',
+                      'great-circle_pole_ra':'right ascension within ICRS of the FAST/NDAC reference great-circle pole',
+                      'great-circle_pole_dec':'declination within ICRS of the FAST/NDAC reference great-circle pole'})            
+            print(f'For more detailed information, please refer to https://hipparcos-tools.cosmos.esa.int/cgi-bin/HIPcatalogueSearch.pl?noLinks=1&tabular=1&hipiId={HIP}')
+        # A small minority of HIP intermediate data cannot be found.
         except IndexError:
             print(f'The intermediate data of HIP {HIP} cannot be found.')
 
@@ -257,15 +330,18 @@ def get_data(star_name,type):
             text_list = text.split('\\r\\n')
             data_list = [x.split('|') for x in text_list]
             data_list_t = list(map(list, zip(*data_list)))
-
+            # Assign units to columns.
             data_list_t[0] = [float(x)+2440000 for x in list(data_list_t[0])] * u.d
             data_list_t[1] = [float(x) for x in list(data_list_t[1])] * u.mag
             data_list_t[2] = [float(x) for x in list(data_list_t[2])] * u.mag
-
+            # Assign names and descriptions to columns.
             out = QTable(data_list_t,
                 names=('obs_epoch','hp','hp_error','quality_flag'),
                 meta={'obs_epoch':'observation epoch, in Barycentric Julian Days',
                       'hp':'calibrated Hp magnitude for this transit','hp_error':'estimated standard error of Hp magnitude','quality_flag':'quality flag, from bit 0 to bit 8'})
+            
+            print(f'For more detailed information, please refer to https://hipparcos-tools.cosmos.esa.int/cgi-bin/HIPcatalogueSearch.pl?hipepId={HIP}')
+        # A small minority of HIP epoch photometry data cannot be found.
         except IndexError:
             print(f'The epoch photometry data of HIP {HIP} cannot be found.')
             
