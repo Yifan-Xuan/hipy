@@ -21,8 +21,6 @@ def cal2jd(yr,mn,dy):
 #   b = math.floor(y/400) - math.floor(y/100)
     jd = math.floor(365.25*y) + math.floor(30.6001*(m+1)) + b + 1720996.5 + dy
     return jd
-
-
 def yr2jd(yr):  
     iyr = math.floor(yr)
     jd0 = cal2jd(iyr,1,1)
@@ -31,6 +29,7 @@ def yr2jd(yr):
     jd1 = cal2jd(iyr,1,0) + doy
     return jd1
 
+# This is from L. Lindegren's code to give the barycentric position of the earth in a given year between 1988 an 1993. 
 def cearth(year):
     omega = 0.0172021240/86400
     e = 0.016714
@@ -70,6 +69,7 @@ def get_data(star_name,type):
         HIP = int(line[0][0].split('HIP')[1])
 
     # Download 3 types of Hipparcos data: catalogue data (catalogue), intermediate data (intermediate), and epoch photometry data (epd).
+    # Download Hipparcos catalogue data.
     if type == 'catalogue':
         try:
             print(f'### Query for catalogue_HIP {HIP}')
@@ -150,7 +150,8 @@ def get_data(star_name,type):
                         'f1','f2','hip_number','bt_mag','bt_mag_error','vt_mag','vt_mag_error','bt_vt_flag','b_v','b_v_error','b_v_source','v_i','v_i_error','v_i_source','colour_indices_flag',             
                         'hp_mag','hp_mag_error','hp_scatter','hp_number','phot_flag','hp_max','hp_min','var_period','var_type','var_tables_flag','var_light_curves_flag',                        
                        'ccdm','ccdm_historical_status','n_catalogue_entries','n_components','dmsa_flag','astrometric_source_flag','solution_quality','component_identifiers',
-                        'position_angle','angular_seperation','angular_seperation_error','delta_hp','delta_hp_error','survey_flag','chart_flag','notes_flag','hd','bd','cod','cpd','v_i_mag_red','sp_type','sp_type_source'),
+                        'position_angle','angular_seperation','angular_seperation_error','delta_hp','delta_hp_error',
+                        'survey_flag','chart_flag','notes_flag','hd','bd','cod','cpd','v_i_mag_red','sp_type','sp_type_source'),
 
                  meta={'catalogue':'Catalogue (H = Hipparcos, T = Tycho)', 'hip':'Hipparcos Catalogue(HIP) identifier', 'proximity_flag':'Proximity flag',
                        'ra_hms':'The approximate right ascension in conventional sexagesimal units with truncated precision and within the ICRS reference system, for epoch J1991.25', 
@@ -193,6 +194,7 @@ def get_data(star_name,type):
         except IndexError:
             print(f'The catalogue of HIP {HIP} cannot be found.')
 
+    # Download Hipparcos intermediate data.
     elif type == 'intermediate':
         try:
             print(f'### Query for intermediate_HIP {HIP}')
@@ -259,18 +261,18 @@ def get_data(star_name,type):
 
             i = 0
             obs_dec_list = []
-            obs_alpha_list = []
+            obs_ra_list = []
             for year in epoch_time:
                 ret = cearth(year)
                 pa = ret[0]*math.sin(p[0]*d2r) - ret[1]*math.cos(p[0]*d2r)
                 pd = (ret[0]*math.cos(p[0]*d2r) + ret[1]*math.sin(p[0]*d2r))*math.sin(p[1]*d2r) - ret[2]*math.cos(p[1]*d2r)
                 model_dec = p[1] + (float(data_list_t[i][15])*p[4] + pd*p[2])/3600/1000
                 obs_dec = model_dec + dec_residual[i]/3600/1000
-                obs_alpha = p[0] + (ra_residual[i] + float(data_list_t[i][15])*p[3]/math.cos(model_dec*d2r) + p[2]*pa)/3600/1000 
+                obs_ra = p[0] + (ra_residual[i] + (float(data_list_t[i][15])*p[3] + p[2]*pa)/math.cos(model_dec*d2r))/3600/1000 
                 obs_dec_list.append(obs_dec)
-                obs_alpha_list.append(obs_alpha)
+                obs_ra_list.append(obs_ra)
                 i = i + 1 
-            data_list_t = np.insert(data_list_t,2,obs_alpha_list,axis=1)
+            data_list_t = np.insert(data_list_t,2,obs_ra_list,axis=1)
             data_list_t = np.insert(data_list_t,3,obs_dec_list,axis=1)
 
             data_list_tt = list(zip(*data_list_t))
@@ -297,14 +299,14 @@ def get_data(star_name,type):
             data_list_tt[21] = [float(x) for x in list(data_list_tt[21])] * u.deg
             # Assign names and descriptions to columns.
             out = QTable(data_list_tt,
-                names=('orbit_number','source_absc','obs_ra','obs_dec','apd_ra','apd_dec','apd_parallax','apd_pmra','apd_pmdec','absc_residual','ra_residual',
+                names=('orbit_number','source_absc','obs_ra','obs_dec','absc/ra','absc/dec','absc/parallax','absc/pmra','absc/pmdec','absc_residual','ra_residual',
                        'dec_residual','absc_error','ra_error','dec_error','absc_corr','ra_dec_corr','ref_great-circle_mid-epoch (yr)',
                         'ref_great-circle_epoch_time (yr)','ref_great-circle_epoch_time (bjd)','great-circle_pole_ra','dec_great-circle_pole_dec'),
                 meta={'orbit_number':'orbit number','source_absc':'source of abscissa (F or f if FAST data, N or n if NDAC data)',
                       'obs_ra':'observational value of RA in this FAST/NDAC great-circle epoch time (deg)','obs_dec':'observational value of Dec in this FAST/NDAC great-circle epoch time (deg)',
-                      'apd_ra':'abscissa partial derivative with respect to RA','apd_dec':'abscissa partial derivative with respect to Dec',
-                      'apd_parallax':'abscissa partial derivative with respect to parallax','apd_pmra':'abscissa partial derivative with respect to proper motion in RA direction',
-                      'apd_pmdec':'abscissa partial derivative with respect to proper motion in Dec direction',
+                      'absc/ra':'abscissa partial derivative with respect to RA','absc/dec':'abscissa partial derivative with respect to Dec',
+                      'absc/parallax':'abscissa partial derivative with respect to parallax','absc/pmra':'abscissa partial derivative with respect to proper motion in RA direction',
+                      'absc/pmdec':'abscissa partial derivative with respect to proper motion in Dec direction',
                       'absc_residual':'abscissa residual','ra_residual':'residual of right ascension','dec_residual':'residual of declination',
                       'absc_error':'standard error of the abscissa','ra_error':'standard error of right ascension','dec_error':'standard error of declination',
                       'absc_corr':'correlation coefficient between FAST and NDAC abscissae','ra_dec_corr':'correlation coefficient between right ascension and declination',
@@ -318,6 +320,7 @@ def get_data(star_name,type):
         except IndexError:
             print(f'The intermediate data of HIP {HIP} cannot be found.')
 
+    # Download Hipparcos epoch photometry data.
     elif type == 'epd':
         try:
             print(f'### Query for epd_HIP {HIP}')
