@@ -127,14 +127,14 @@ def get_dmsa(star_name):
         final_list_t[9] = [float(x) for x in list(final_list_t[9])] * u.mas
         final_list_t[10] = [float(x) for x in list(final_list_t[10])] * u.mas
         out = QTable(final_list_t, names=('hip','hp_ref','d_ra*','d_dec','d_ra*_error','d_dec_error','f_d','position_angle',
-                  'position_angle_error','seperation_min','d_var','notes_flag','corr'),
+                  'position_angle_error','separation_min','d_var','notes_flag','corr'),
             meta={'hip':'Hipparcos Catalogue identifier','hp_ref':'Adopted reference magnitudes for the object (mag)',
                   'd_ra*':'Element of the variability-induced motion in RA (mas)','d_dec':'Element of the variability-induced motion in Dec (mas)',
                   'd_ra*_error':'Standard error of the VIM element in RA (mas)','d_dec_error':'Standard error of the VIM element in Dec (mas)',
                   'f_d':'Significance of the VIM elements',
                   'position_angle':'position angle of the constant component of the binary with respect to the variable component, in degrees',
                   'position_angle_error':'Standard error of the position angle, in degrees',
-                  'seperation_min':'Lower limit for the seperation of the binary (mas)',
+                  'separation_min':'Lower limit for the separation of the binary (mas)',
                   'd_var':'Displacement of photocentre between the minimum and maximum luminosity of the system (mas)',
                   'notes_flag':'Flag indicating a note at the end of relevent volume','corr':'21 correlation coefficients in a non-linear coding'})
 
