@@ -98,49 +98,24 @@ def get_data(star_name,type):
             final_list_t = list(zip(*final_list))
             
             # Assign units to columns.
-            final_list_t[5] = [float(x) for x in list(final_list_t[5])] * u.mag
-            final_list_t[8] = [float(x) for x in list(final_list_t[8])] * u.deg
-            final_list_t[9] = [float(x) for x in list(final_list_t[9])] * u.deg
-            final_list_t[11] = [float(x) for x in list(final_list_t[11])] * u.mas
-            final_list_t[12] = [float(x) for x in list(final_list_t[12])] * u.mas/u.yr
-            final_list_t[13] = [float(x) for x in list(final_list_t[13])] * u.mas/u.yr
-            final_list_t[14] = [float(x) for x in list(final_list_t[14])] * u.mas
-            final_list_t[15] = [float(x) for x in list(final_list_t[15])] * u.mas
-            final_list_t[16] = [float(x) for x in list(final_list_t[16])] * u.mas
-            final_list_t[17] = [float(x) for x in list(final_list_t[17])] * u.mas/u.yr
-            final_list_t[18] = [float(x) for x in list(final_list_t[18])] * u.mas/u.yr
-            final_list_t[19] = [float(x) for x in list(final_list_t[19])]
-            final_list_t[20] = [float(x) for x in list(final_list_t[20])]
-            final_list_t[21] = [float(x) for x in list(final_list_t[21])]
-            final_list_t[22] = [float(x) for x in list(final_list_t[22])]
-            final_list_t[23] = [float(x) for x in list(final_list_t[23])]
-            final_list_t[24] = [float(x) for x in list(final_list_t[24])]
-            final_list_t[25] = [float(x) for x in list(final_list_t[25])]
-            final_list_t[26] = [float(x) for x in list(final_list_t[26])]
-            final_list_t[27] = [float(x) for x in list(final_list_t[27])]
-            final_list_t[28] = [float(x) for x in list(final_list_t[28])]
-            final_list_t[29] = [float(x) for x in list(final_list_t[29])]
-            final_list_t[30] = [float(x) for x in list(final_list_t[30])]
-            final_list_t[32] = [float(x) for x in list(final_list_t[32])] * u.mag
-            final_list_t[33] = [float(x) for x in list(final_list_t[33])] * u.mag
-            final_list_t[34] = [float(x) for x in list(final_list_t[34])] * u.mag
-            final_list_t[35] = [float(x) for x in list(final_list_t[35])] * u.mag
-            final_list_t[37] = [float(x) for x in list(final_list_t[37])] * u.mag
-            final_list_t[38] = [float(x) for x in list(final_list_t[38])] * u.mag
-            final_list_t[40] = [float(x) for x in list(final_list_t[40])] * u.mag
-            final_list_t[41] = [float(x) for x in list(final_list_t[41])] * u.mag
-            final_list_t[44] = [float(x) for x in list(final_list_t[44])] * u.mag
-            final_list_t[45] = [float(x) for x in list(final_list_t[45])] * u.mag
-            final_list_t[46] = [float(x) for x in list(final_list_t[46])] * u.mag
-            final_list_t[49] = [float(x) for x in list(final_list_t[49])] * u.mag
-            final_list_t[50] = [float(x) for x in list(final_list_t[50])] * u.mag
+            index_mag = [5,32,33,34,35,37,38,40,41,44,45,46,49,50,66,67,75]
+            index_deg = [8,9,63]
+            index_mas = [11,14,15,16]
+            index_mas_yr = [12,13,17,18]
+            index_float = [19,20,21,22,23,24,25,26,27,28,29,30]
+            for i in index_mag:
+                final_list_t[i] = [float(x) for x in list(final_list_t[i])] * u.mag
+            for i in index_deg:
+                final_list_t[i] = [float(x) for x in list(final_list_t[i])] * u.deg
+            for i in index_mas:
+                final_list_t[i] = [float(x) for x in list(final_list_t[i])] * u.mas
+            for i in index_mas_yr:
+                final_list_t[i] = [float(x) for x in list(final_list_t[i])] * u.mas/u.yr
+            for i in index_float:
+                final_list_t[i] = [float(x) for x in list(final_list_t[i])]
             final_list_t[51] = [float(x) for x in list(final_list_t[51])] * u.d
-            final_list_t[63] = [float(x) for x in list(final_list_t[63])] * u.deg
             final_list_t[64] = [float(x) for x in list(final_list_t[64])] * u.arcsec
             final_list_t[65] = [float(x) for x in list(final_list_t[65])] * u.arcsec
-            final_list_t[66] = [float(x) for x in list(final_list_t[66])] * u.mag
-            final_list_t[67] = [float(x) for x in list(final_list_t[67])] * u.mag
-            final_list_t[75] = [float(x) for x in list(final_list_t[75])] * u.mag
             
             # Assign names and descriptions to columns.
             out = QTable(final_list_t,
@@ -222,12 +197,9 @@ def get_data(star_name,type):
                         data.append(x)
                 data_list.append(data)
             data_list_t = list(map(list, zip(*data_list)))
-            data_list_t[2] = [float(x) for x in list(data_list_t[2])]
-            data_list_t[3] = [float(x) for x in list(data_list_t[3])]
-            data_list_t[7] = [float(x) for x in list(data_list_t[7])]
-            data_list_t[8] = [float(x) for x in list(data_list_t[8])]
-            data_list_t[9] = [float(x) for x in list(data_list_t[9])]
-            data_list_t[10] = [float(x) for x in list(data_list_t[10])]
+            index_float = [2,3,7,8,9,10]
+            for i in index_float:
+                data_list_t[i] = [float(x) for x in list(data_list_t[i])]
 
             epoch_time = [x+1991.25 for x in list(data_list_t[10])]
             data_list_t = np.array(data_list_t).transpose()
@@ -277,26 +249,19 @@ def get_data(star_name,type):
 
             data_list_tt = list(zip(*data_list_t))
             # Assign units to columns.
-            data_list_tt[2] = [float(x) for x in list(data_list_tt[2])] * u.deg
-            data_list_tt[3] = [float(x) for x in list(data_list_tt[3])] * u.deg
-            data_list_tt[4] = [float(x) for x in list(data_list_tt[4])]
-            data_list_tt[5] = [float(x) for x in list(data_list_tt[5])]
-            data_list_tt[6] = [float(x) for x in list(data_list_tt[6])]
-            data_list_tt[7] = [float(x) for x in list(data_list_tt[7])]
-            data_list_tt[8] = [float(x) for x in list(data_list_tt[8])]
-            data_list_tt[9] = [float(x) for x in list(data_list_tt[9])] * u.mas
-            data_list_tt[10] = [float(x) for x in list(data_list_tt[10])] * u.mas
-            data_list_tt[11] = [float(x) for x in list(data_list_tt[11])] * u.mas
-            data_list_tt[12] = [float(x) for x in list(data_list_tt[12])] * u.mas
-            data_list_tt[13] = [float(x) for x in list(data_list_tt[13])] * u.mas
-            data_list_tt[14] = [float(x) for x in list(data_list_tt[14])] * u.mas
-            data_list_tt[15] = [float(x) for x in list(data_list_tt[15])]
-            data_list_tt[16] = [float(x) for x in list(data_list_tt[16])]
+            index_deg = [2,3,20,21]
+            index_float = [4,5,6,7,8,15,16]
+            index_mas = [9,10,11,12,13,14]
+            for i in index_deg:
+                data_list_tt[i] = [float(x) for x in list(data_list_tt[i])] * u.deg
+            for i in index_float:
+                data_list_tt[i] = [float(x) for x in list(data_list_tt[i])]
+            for i in index_mas:
+                data_list_tt[i] = [float(x) for x in list(data_list_tt[i])] * u.mas
             data_list_tt[17] = [float(x) for x in list(data_list_tt[17])] * u.yr
             data_list_tt[18] = [float(x) for x in list(data_list_tt[18])] * u.yr
             data_list_tt[19] = [float(x) for x in list(data_list_tt[19])] * u.d
-            data_list_tt[20] = [float(x) for x in list(data_list_tt[20])] * u.deg
-            data_list_tt[21] = [float(x) for x in list(data_list_tt[21])] * u.deg
+
             # Assign names and descriptions to columns.
             out = QTable(data_list_tt,
                 names=('orbit_number','source_absc','obs_ra','obs_dec','absc/ra','absc/dec','absc/parallax','absc/pmra','absc/pmdec','absc_residual','ra_residual',
