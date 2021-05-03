@@ -46,7 +46,7 @@ def plot(star_name):
         for i in index_float:
             data_list_t[i] = [float(x) for x in list(data_list_t[i])]
 
-        plt.title(f'HIP {HIP}')
+        plt.title(f'Epoch photometry data of HIP {HIP}')
         plt.xlabel('Observation epoch (BJD - 2440000)')
         plt.ylabel('Calibrated Hp (mag)')
         plt.gca().invert_yaxis()
