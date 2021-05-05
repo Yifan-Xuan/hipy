@@ -169,15 +169,17 @@ def plot(star_name,consortium):
             except IndexError:
                 print(f'The intermediate data of HIP {HIP} has no source of abscissa from F or f.')
             finally:
-                plt.title(f'HIP {HIP}')
-                plt.ylabel(r'$\Delta\delta$'+' [mas]')
-                plt.xlabel(r'$\Delta\alpha$'+r'$ cos(\delta)$'+' [mas]')
+                plt.title(f'Apparent motion of HIP {HIP} (FAST)',fontdict={'weight':'normal','size': 20})
+                plt.ylabel(r'$\Delta\delta$'+' [mas]',fontdict={'weight':'normal','size': 15})
+                plt.xlabel(r'$\Delta\alpha$'+r'$ cos(\delta)$'+' [mas]',fontdict={'weight':'normal','size': 15})
+                plt.xticks(size = 15)
+                plt.yticks(size = 15)
                 type5 = plt.plot(barycentric_dra_list,barycentric_ddec_list,color='violet',label='Barycentric motion')
                 type6 = plt.plot(model_dra_list,model_ddec_list,color='lime',label='Solution')
                 try:
-                    plt.legend((type1,type2,type5[0],type6[0]),('FAST Data Fitted','FAST Data Rejected','Barycentric motion','Solution'))
+                    plt.legend((type1,type2,type5[0],type6[0]),('FAST Data Fitted','FAST Data Rejected','Barycentric motion','Solution'),fontsize='x-large')
                 except NameError:
-                    plt.legend((type1,type5[0],type6[0]),('FAST Data Fitted','Barycentric motion','Solution'))
+                    plt.legend((type1,type5[0],type6[0]),('FAST Data Fitted','Barycentric motion','Solution'),fontsize='x-large')
                 plt.show()
         elif consortium == 'N' or consortium == 'n' or consortium == 'NDAC':
             try:
@@ -193,15 +195,17 @@ def plot(star_name,consortium):
             except IndexError:
                 print(f'The intermediate data of HIP {HIP} has no source of abscissa from N or n.')
             finally:
-                plt.title(f'HIP {HIP}')
-                plt.ylabel(r'$\Delta\delta$'+' [mas]')
-                plt.xlabel(r'$\Delta\alpha$'+r'$ cos(\delta)$'+' [mas]')
+                plt.title(f'Apparent motion of HIP {HIP} (NDAC)',fontdict={'weight':'normal','size': 20})
+                plt.ylabel(r'$\Delta\delta$'+' [mas]',fontdict={'weight':'normal','size': 15})
+                plt.xlabel(r'$\Delta\alpha$'+r'$ cos(\delta)$'+' [mas]',fontdict={'weight':'normal','size': 15})
+                plt.xticks(size = 15)
+                plt.yticks(size = 15)
                 type5 = plt.plot(barycentric_dra_list,barycentric_ddec_list,color='violet',label='Barycentric motion')
                 type6 = plt.plot(model_dra_list,model_ddec_list,color='lime',label='Solution')
                 try:
-                    plt.legend((type3,type4,type5[0],type6[0]),('NDAC Data Fitted','NDAC Data Rejected','Barycentric motion','Solution'))
+                    plt.legend((type3,type4,type5[0],type6[0]),('NDAC Data Fitted','NDAC Data Rejected','Barycentric motion','Solution'),fontsize='x-large')
                 except NameError:
-                    plt.legend((type3,type5[0],type6[0]),('NDAC Data Fitted','Barycentric motion','Solution'))
+                    plt.legend((type3,type5[0],type6[0]),('NDAC Data Fitted','Barycentric motion','Solution'),fontsize='x-large')
                 plt.show()
         elif consortium == 'Both' or consortium == 'both':
             try:
@@ -228,27 +232,31 @@ def plot(star_name,consortium):
             except IndexError:
                 print(f'The intermediate data of HIP {HIP} has no source of abscissa from N or n.')    
             finally:
-                plt.title(f'HIP {HIP}')
-                plt.ylabel(r'$\Delta\delta$'+' [mas]')
-                plt.xlabel(r'$\Delta\alpha$'+r'$ cos(\delta)$'+' [mas]')
+                plt.title(f'Apparent motion of HIP {HIP} (Both)',fontdict={'weight':'normal','size': 20})
+                plt.ylabel(r'$\Delta\delta$'+' [mas]',fontdict={'weight':'normal','size': 15})
+                plt.xlabel(r'$\Delta\alpha$'+r'$ cos(\delta)$'+' [mas]',fontdict={'weight':'normal','size': 15})
+                plt.xticks(size = 15)
+                plt.yticks(size = 15)
                 type5 = plt.plot(barycentric_dra_list,barycentric_ddec_list,color='violet',label='Barycentric motion')
                 type6 = plt.plot(model_dra_list,model_ddec_list,color='lime',label='Solution')
                 try:
                     plt.legend((type1,type2,type3,type4,type5[0],type6[0]),('FAST Data Fitted','FAST Data Rejected','NDAC Data Fitted','NDAC Data Rejected','Barycentric motion','Solution'))
                 except NameError:
                     try:
-                        plt.legend((type1,type3,type4,type5[0],type6[0]),('FAST Data Fitted','NDAC Data Fitted','NDAC Data Rejected','Barycentric motion','Solution'))
+                        plt.legend((type1,type3,type4,type5[0],type6[0]),('FAST Data Fitted','NDAC Data Fitted','NDAC Data Rejected','Barycentric motion','Solution'),fontsize='x-large')
                     except NameError:
-                        plt.legend((type1,type3,type5[0],type6[0]),('FAST Data Fitted','NDAC Data Fitted','Barycentric motion','Solution'))
+                        plt.legend((type1,type3,type5[0],type6[0]),('FAST Data Fitted','NDAC Data Fitted','Barycentric motion','Solution'),fontsize='x-large')
                 plt.show()
         elif consortium == 'None' or consortium == 'none':
             plt.figure(figsize=(10,10))
-            plt.title(f'HIP {HIP}')
-            plt.ylabel(r'$\Delta\delta$'+' [mas]')
-            plt.xlabel(r'$\Delta\alpha$'+r'$ cos(\delta)$'+' [mas]')
+            plt.title(f'Apparent motion of HIP {HIP} (None)',fontdict={'weight':'normal','size': 20})
+            plt.ylabel(r'$\Delta\delta$'+' [mas]',fontdict={'weight':'normal','size': 15})
+            plt.xlabel(r'$\Delta\alpha$'+r'$ cos(\delta)$'+' [mas]',fontdict={'weight':'normal','size': 15})
+            plt.xticks(size = 15)
+            plt.yticks(size = 15)
             type5 = plt.plot(barycentric_dra_list,barycentric_ddec_list,color='violet',label='Barycentric motion')
             type6 = plt.plot(model_dra_list,model_ddec_list,color='lime',label='Solution')
-            plt.legend((type5[0],type6[0]),('Barycentric motion','Solution'))
+            plt.legend((type5[0],type6[0]),('Barycentric motion','Solution'),fontsize='x-large')
             plt.show()
         else:
             print('No such consortium exits. Please check your input consortium.')
